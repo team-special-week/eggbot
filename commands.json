@@ -1,0 +1,10 @@
+[
+  {
+    "name": "subscribe",
+    "description": "이 채널에 뉴스레터를 보내도록 합니다."
+  },
+  {
+    "name": "unsubscribe",
+    "description": "뉴스레터를 더 이상 받지 않도록 합니다."
+  }
+]

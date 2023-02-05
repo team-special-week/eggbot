@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DiscordModule } from './discord/discord.module';
 import { validate } from './config/env.validation';
+import { SubscribeModule } from './subscribe/subscribe.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { validate } from './config/env.validation';
       inject: [ConfigService],
     }),
     DiscordModule,
+    SubscribeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

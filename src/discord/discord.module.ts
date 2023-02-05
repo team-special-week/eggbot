@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DiscordService } from './discord.service';
+import { SubscribeModule } from '../subscribe/subscribe.module';
+import { DiscordController } from './discord.controller';
 
 @Module({
-  providers: [DiscordService]
+  imports: [SubscribeModule],
+  controllers: [DiscordController],
 })
 export class DiscordModule {}

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subscribe } from './entities/subscribe.entity';
 import { SubscribeSetting } from './entities/subscribe-setting.entity';
 import { CreateSubscribeDto } from './dto/create-subscribe.dto';
+import { RemoveSubscribeDto } from './dto/remove-subscribe.dto';
 
 @Injectable()
 export class SubscribeService {
@@ -15,10 +16,22 @@ export class SubscribeService {
   ) {}
 
   async createSubscribe(dto: CreateSubscribeDto): Promise<Subscribe> {
-    const setting = await this.subscribeSettingRepository.save({});
-    return this.subscribeRepository.save({
-      ...dto,
-      setting,
+    const setting = new SubscribeSetting();
+    setting.newLetterCategory = dto.newsLetterCategory;
+    await this.subscribeSettingRepository.save(setting);
+
+    const subscribe = new Subscribe();
+    subscribe.channelId = dto.channelId;
+    subscribe.subscriberName = dto.subscriberName;
+    subscribe.setting = setting;
+    await this.subscribeRepository.save(subscribe);
+
+    return subscribe;
+  }
+
+  async removeSubscribe(dto: RemoveSubscribeDto): Promise<DeleteResult> {
+    return this.subscribeRepository.delete({
+      channelId: dto.channelId,
     });
   }
 

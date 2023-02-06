@@ -1,6 +1,5 @@
 import { Controller, Logger } from '@nestjs/common';
 import {
-  ChatInputCommandInteraction,
   Client,
   Events,
   GatewayIntentBits,
@@ -12,9 +11,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { readFileSync } from 'fs';
 import * as path from 'path';
-import { CreateSubscribeDto } from '../subscribe/dto/create-subscribe.dto';
-import { SubscribeService } from '../subscribe/subscribe.service';
-import transformAndValidate from '../common/utils/transformAndValidate';
+
+import { DiscordService } from './discord.service';
 
 interface ICommand {
   name: string;
@@ -33,7 +31,7 @@ export class DiscordController {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly subscribeService: SubscribeService,
+    private readonly discordService: DiscordService,
   ) {
     this.EGGBOT_TOKEN = this.configService.get<string>('EGGBOT_TOKEN');
     this.EGGBOT_CLIENT_ID = this.configService.get<string>('EGGBOT_CLIENT_ID');
@@ -45,50 +43,28 @@ export class DiscordController {
     });
     this.discordClient.on(
       Events.InteractionCreate,
-      this.clientSlashCommandOn.bind(this),
+      this.clientInteractionCreate.bind(this),
     );
   }
 
-  protected async subscribe(interaction: ChatInputCommandInteraction) {
-    const createSubscribeDto = await transformAndValidate(CreateSubscribeDto, {
-      channelId: interaction.channelId,
-      subscriberName: interaction.user.username,
-    });
-
-    const subscribe = await this.subscribeService.getSubscribeByChannelId(
-      createSubscribeDto.channelId,
-    );
-
-    if (subscribe) {
-      await interaction.reply({
-        content: '🐔 이미 이 채널에 뉴스레터를 보내고 있습니다.',
-      });
-      return;
+  private async clientInteractionCreate(interaction: Interaction) {
+    if (interaction.isChatInputCommand()) {
+      const func = this.discordService[interaction.commandName]?.bind(
+        this.discordService,
+      );
+      if (func) {
+        interaction.reply(await func(interaction));
+      }
     }
 
-    await this.subscribeService.createSubscribe(createSubscribeDto);
-    await interaction.reply({
-      content: '🥚 이제 이 채널에 뉴스레터를 보내드릴게요.',
-    });
-  }
-
-  protected async unsubscribe(interaction: ChatInputCommandInteraction) {
-    await interaction.reply({
-      content: '🍳 더 이상 이 채널에 뉴스레터를 보내지 않습니다.',
-    });
-  }
-
-  private async clientSlashCommandOn(interaction: Interaction) {
-    if (!interaction.isChatInputCommand()) {
-      return;
+    if (interaction.isStringSelectMenu()) {
+      const func = this.discordService[interaction.customId]?.bind(
+        this.discordService,
+      );
+      if (func) {
+        interaction.reply(await func(interaction));
+      }
     }
-
-    const func = this[interaction.commandName].bind(this);
-    if (!func) {
-      this.logger.error('Unknown command: ' + interaction.commandName);
-    }
-
-    await func(interaction);
   }
 
   private async refreshingCommands() {

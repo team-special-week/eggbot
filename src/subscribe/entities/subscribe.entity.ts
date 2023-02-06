@@ -13,7 +13,7 @@ export class Subscribe {
   @PrimaryGeneratedColumn()
   _id: number;
 
-  @OneToOne(() => SubscribeSetting)
+  @OneToOne(() => SubscribeSetting, { onDelete: 'CASCADE' })
   @JoinColumn()
   setting: SubscribeSetting;
 

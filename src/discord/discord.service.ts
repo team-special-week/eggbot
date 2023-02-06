@@ -1,105 +1,83 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { SubscribeService } from '../subscribe/subscribe.service';
 import {
-  Client,
-  Events,
-  GatewayIntentBits,
-  REST,
-  SlashCommandBuilder,
-  Routes,
-  CacheType,
-  Interaction,
+  ActionRowBuilder,
   ChatInputCommandInteraction,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
 } from 'discord.js';
-import { ConfigService } from '@nestjs/config';
-import { readFileSync } from 'fs';
-import * as path from 'path';
-
-interface ICommand {
-  name: string;
-  description: string;
-}
+import { NewsLetterCategoryDropdown } from '../common/enums/newsLetterCategory';
+import transformAndValidate from '../common/utils/transformAndValidate';
+import { RemoveSubscribeDto } from '../subscribe/dto/remove-subscribe.dto';
+import DiscordInteractionReply from '../common/types/discordInteractionReplyType';
+import { CreateSubscribeDto } from 'src/subscribe/dto/create-subscribe.dto';
 
 @Injectable()
 export class DiscordService {
-  private readonly discordClient = new Client({
-    intents: [GatewayIntentBits.Guilds],
-  });
-  private readonly logger = new Logger(DiscordService.name);
+  constructor(private readonly subscribeService: SubscribeService) {}
 
-  private readonly EGGBOT_TOKEN: string;
-  private readonly EGGBOT_CLIENT_ID: string;
-
-  constructor(private readonly configService: ConfigService) {
-    this.EGGBOT_TOKEN = this.configService.get<string>('EGGBOT_TOKEN');
-    this.EGGBOT_CLIENT_ID = this.configService.get<string>('EGGBOT_CLIENT_ID');
-
-    this.discordClient.login(this.EGGBOT_TOKEN).then();
-    this.discordClient.once(Events.ClientReady, (c) => {
-      this.logger.log(`Ready! Logged in as ${c.user.tag}`);
-      this.refreshingCommands().then();
-    });
-    this.discordClient.on(
-      Events.InteractionCreate,
-      this.clientSlashCommandOn.bind(this),
+  async subscribe(
+    interaction: ChatInputCommandInteraction,
+  ): Promise<DiscordInteractionReply> {
+    const subscribe = await this.subscribeService.getSubscribeByChannelId(
+      interaction.channelId,
     );
-  }
 
-  protected async clientSlashCommandOn(interaction: Interaction) {
-    if (!interaction.isChatInputCommand()) {
-      return;
+    if (subscribe) {
+      return {
+        content: '🥚 이미 이 채널에 뉴스레터를 보내고 있어요.',
+      };
     }
 
-    const func = this[interaction.commandName];
-    if (!func) {
-      this.logger.error('Unknown command: ' + interaction.commandName);
-    }
+    // 카테고리 선택 Dropdown 을 생성
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId('subscribeNewsLetterCategory')
+        .setPlaceholder('어떤 주제를 구독할까요?')
+        .addOptions(NewsLetterCategoryDropdown),
+    );
 
-    await func(interaction);
+    return {
+      content: '이 채널에 어떤 주제의 뉴스를 보낼까요?',
+      components: [row],
+    };
   }
 
-  protected async subscribe(interaction: ChatInputCommandInteraction) {
-    await interaction.reply({
-      content: '🥚 이제 이 채널에 뉴스레터를 보내드릴게요.',
+  async unsubscribe(
+    interaction: ChatInputCommandInteraction,
+  ): Promise<DiscordInteractionReply> {
+    const removeSubscribeDto = await transformAndValidate(RemoveSubscribeDto, {
+      channelId: interaction.channelId,
     });
-  }
 
-  protected async unsubscribe(interaction: ChatInputCommandInteraction) {
-    await interaction.reply({
+    const subscribe = await this.subscribeService.getSubscribeByChannelId(
+      removeSubscribeDto.channelId,
+    );
+
+    if (!subscribe) {
+      return {
+        content: '🍳 이 채널에는 뉴스레터를 보내고 있지 않아요.',
+      };
+    }
+
+    await this.subscribeService.removeSubscribe(removeSubscribeDto);
+
+    return {
       content: '🍳 더 이상 이 채널에 뉴스레터를 보내지 않습니다.',
-    });
+    };
   }
 
-  private async refreshingCommands() {
-    const rest = new REST({ version: '10' }).setToken(this.EGGBOT_TOKEN);
-    const commands = (
-      JSON.parse(
-        readFileSync(path.join(process.env.PWD, 'commands.json'), 'utf8') ||
-          '[]',
-      ) as ICommand[]
-    ).map((command) =>
-      new SlashCommandBuilder()
-        .setName(command.name)
-        .setDescription(command.description)
-        .toJSON(),
-    );
+  async subscribeNewsLetterCategory(interaction: StringSelectMenuInteraction) {
+    const createSubscribeDto = await transformAndValidate(CreateSubscribeDto, {
+      channelId: interaction.channelId,
+      subscriberName: interaction.user.username,
+      newsLetterCategory: interaction.values[0],
+    });
 
-    try {
-      this.logger.log(
-        `Started refreshing ${commands.length} application (/) commands.`,
-      );
+    await this.subscribeService.createSubscribe(createSubscribeDto);
 
-      const data = (await rest.put(
-        Routes.applicationCommands(this.EGGBOT_CLIENT_ID),
-        {
-          body: commands,
-        },
-      )) as any[];
-
-      this.logger.log(
-        `Successfully reloaded ${data.length} application (/) commands.`,
-      );
-    } catch (ex) {
-      this.logger.error(ex);
-    }
+    return {
+      content: '🥚 이제 이 채널에 뉴스레터를 보내드릴게요 :)',
+    };
   }
 }

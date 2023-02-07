@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DiscordModule } from './discord/discord.module';
 import { validate } from './config/env.validation';
 import { SubscribeModule } from './subscribe/subscribe.module';
+import { CrawlerModule } from './crawler/crawler.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SubscribeModule } from './subscribe/subscribe.module';
     }),
     DiscordModule,
     SubscribeModule,
+    CrawlerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

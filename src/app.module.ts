@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DiscordModule } from './discord/discord.module';
 import { validate } from './config/env.validation';
 import { SubscribeModule } from './subscribe/subscribe.module';
+import { PaperboyModule } from './paperboy/paperboy.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { SubscribeModule } from './subscribe/subscribe.module';
     }),
     DiscordModule,
     SubscribeModule,
+    PaperboyModule,
+    ScheduleModule.forRoot(),
+    NewsletterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

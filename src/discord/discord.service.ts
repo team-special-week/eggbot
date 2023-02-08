@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SubscribeService } from '../subscribe/subscribe.service';
 import {
   ActionRowBuilder,
+  Channel,
   ChatInputCommandInteraction,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
@@ -11,6 +12,8 @@ import transformAndValidate from '../common/utils/transformAndValidate';
 import { RemoveSubscribeDto } from '../subscribe/dto/remove-subscribe.dto';
 import DiscordInteractionReply from '../common/types/discordInteractionReplyType';
 import { CreateSubscribeDto } from 'src/subscribe/dto/create-subscribe.dto';
+import { NewsLetter } from '../newsletter/entities/newsletter.entity';
+import { DiscordController } from './discord.controller';
 
 @Injectable()
 export class DiscordService {
@@ -79,5 +82,11 @@ export class DiscordService {
     return {
       content: '🥚 이제 이 채널에 뉴스레터를 보내드릴게요 :)',
     };
+  }
+
+  async deliveryNewsLetter(channelId: string, newsLetters: NewsLetter[]) {
+    const client = DiscordController.client;
+    client.guilds.cache.get(channelId);
+    (client.channels.cache.get(channelId) as any).send('test');
   }
 }

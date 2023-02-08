@@ -1,19 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DeliveryLog } from './entities/delivery-log.entity';
-import { Cron } from '@nestjs/schedule';
+import { SubscribeService } from '../subscribe/subscribe.service';
+import { NewsletterService } from '../newsletter/newsletter.service';
+import { GetNewsletterToDeliveryDto } from '../newsletter/dto/get-newsletter-to-delivery.dto';
+import transformAndValidate from '../common/utils/transformAndValidate';
+import randInt from '../common/utils/randInt';
+import { DiscordService } from '../discord/discord.service';
 
 @Injectable()
 export class PaperboyService {
   constructor(
     @InjectRepository(DeliveryLog)
     private readonly deliveryLogRepository: Repository<DeliveryLog>,
+    private readonly subscribeService: SubscribeService,
+    private readonly newsLetterService: NewsletterService,
+    private readonly discordService: DiscordService,
   ) {}
 
-  // @Cron('0 30 09 * * *')
-  @Cron('30 * * * * *')
-  async paperboyScheduleAtMorning() {
-    console.log('paperboyScheduleAtMorning');
+  private readonly logger = new Logger(PaperboyService.name);
+
+  async deliveryAllSubscribes() {
+    const subscribes = await this.subscribeService.getAllSubscribes();
+
+    for (const subscribe of subscribes) {
+      const setting = subscribe.setting;
+      const deliveryLogs = await this.getDeliveryLogsByChannelId(
+        subscribe.channelId,
+      );
+
+      try {
+        const getNewsletterToDeliveryDto = await transformAndValidate(
+          GetNewsletterToDeliveryDto,
+          {
+            newsLetterCategory: setting.newLetterCategory,
+            size: randInt(4, 7),
+            ignoreIDs: deliveryLogs.map((deliveryLog) => deliveryLog._id),
+          },
+        );
+
+        const newsLetterToDelivery =
+          await this.newsLetterService.getNewsLetterToDelivery(
+            getNewsletterToDeliveryDto,
+          );
+
+        await this.discordService.deliveryNewsLetter(
+          subscribe.channelId,
+          newsLetterToDelivery,
+        );
+      } catch (ex) {
+        this.logger.error(ex);
+      }
+    }
+  }
+
+  async getDeliveryLogsByChannelId(channelId: string) {
+    return this.deliveryLogRepository.find({
+      where: {
+        channelId,
+      },
+    });
   }
 }

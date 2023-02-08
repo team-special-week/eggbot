@@ -7,5 +7,6 @@ import { DiscordService } from './discord.service';
   imports: [SubscribeModule],
   controllers: [DiscordController],
   providers: [DiscordService],
+  exports: [DiscordService],
 })
 export class DiscordModule {}

@@ -7,6 +7,9 @@ import { DiscordModule } from './discord/discord.module';
 import { validate } from './config/env.validation';
 import { SubscribeModule } from './subscribe/subscribe.module';
 import { CrawlerModule } from './crawler/crawler.module';
+import { PaperboyModule } from './paperboy/paperboy.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -24,13 +27,16 @@ import { CrawlerModule } from './crawler/crawler.module';
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
     DiscordModule,
     SubscribeModule,
     CrawlerModule,
+    PaperboyModule,
+    ScheduleModule.forRoot(),
+    NewsletterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

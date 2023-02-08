@@ -21,7 +21,7 @@ interface ICommand {
 
 @Controller('discord')
 export class DiscordController {
-  private readonly discordClient = new Client({
+  private static readonly discordClient = new Client({
     intents: [GatewayIntentBits.Guilds],
   });
   private readonly logger = new Logger(DiscordController.name);
@@ -36,15 +36,19 @@ export class DiscordController {
     this.EGGBOT_TOKEN = this.configService.get<string>('EGGBOT_TOKEN');
     this.EGGBOT_CLIENT_ID = this.configService.get<string>('EGGBOT_CLIENT_ID');
 
-    this.discordClient.login(this.EGGBOT_TOKEN).then();
-    this.discordClient.once(Events.ClientReady, (c) => {
+    DiscordController.discordClient.login(this.EGGBOT_TOKEN).then();
+    DiscordController.discordClient.once(Events.ClientReady, (c) => {
       this.logger.log(`Ready! Logged in as ${c.user.tag}`);
       this.refreshingCommands().then();
     });
-    this.discordClient.on(
+    DiscordController.discordClient.on(
       Events.InteractionCreate,
       this.clientInteractionCreate.bind(this),
     );
+  }
+
+  public static get client(): Client {
+    return DiscordController.discordClient;
   }
 
   private async clientInteractionCreate(interaction: Interaction) {

@@ -38,4 +38,8 @@ export class SubscribeService {
   async getSubscribeByChannelId(channelId: string): Promise<Subscribe> {
     return this.subscribeRepository.findOne({ where: { channelId } });
   }
+
+  async getAllSubscribes(): Promise<Subscribe[]> {
+    return this.subscribeRepository.find({ relations: ['setting'] });
+  }
 }

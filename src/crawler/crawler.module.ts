@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { NewsLetter } from 'src/newsletter/entities/newsletter.entity';
+import { NewsletterModule } from 'src/newsletter/newsletter.module';
 import { CrawlerController } from './crawler.controller';
 import { CrawlerService } from './crawler.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([NewsLetter])],
+  imports: [NewsletterModule],
   controllers: [CrawlerController],
   providers: [CrawlerService],
   exports: [CrawlerService],

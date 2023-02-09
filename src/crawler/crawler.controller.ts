@@ -1,11 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { CrawlerService } from './crawler.service';
 
-@Controller('/crawler')
+@Controller('crawler')
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Get('/get')
+  @Cron('0 00 06 * * *')
   getHello(): Promise<any> {
     return this.crawlerService.crawler();
   }

@@ -1,66 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { default as axios } from 'axios';
 import cheerio from 'cheerio';
 import { ENewsLetterCategory } from 'src/common/enums/newsLetterCategory';
-import { NewsLetter } from 'src/newsletter/entities/newsletter.entity';
-import { Repository } from 'typeorm';
+import transformAndValidate from 'src/common/utils/transformAndValidate';
+import { CreateNewsletterDto } from 'src/newsletter/dto/create-news-letter.dto';
+import { NewsletterService } from 'src/newsletter/newsletter.service';
 
 @Injectable()
 export class CrawlerService {
-  constructor(
-    @InjectRepository(NewsLetter)
-    private readonly newsLetterRepository: Repository<NewsLetter>,
-  ) {}
-  // TODO: newsletter 모듈로 저장하기
+  constructor(private readonly newsletterService: NewsletterService) {}
+
   async crawler(): Promise<any> {
-    const data = await axios
-      .get('https://news.hada.io/new')
-      .then(async (res) => {
-        const $ = cheerio.load(res.data);
+    for (let i = 1; i <= 20; i++) {
+      const [title, contentUrl, contentId] = await axios
+        .get('https://news.hada.io/new')
+        .then((res) => {
+          const $ = cheerio.load(res.data);
+          const title = $('#tr' + i).text();
+          const contentId = $(
+            'body > main > article > div > div:nth-child(' +
+              i +
+              ') > div.topicdesc > a',
+          ).attr('href');
+          const contentUrl = 'https://news.hada.io/' + contentId;
 
-        const result = [];
+          return [title, contentUrl, contentId.split('=')[1]];
+        });
 
-        for (let i = 1; i <= 20; i++) {
-          const obj = {
-            title: $('#tr' + i).text(),
-            url: $('#tr' + i).attr('href'),
-            context:
-              'https://news.hada.io/' +
-              $(
-                'body > main > article > div > div:nth-child(' +
-                  i +
-                  ') > div.topicdesc > a',
-              ).attr('href'),
-          };
+      const news = await this.newsletterService.findContentId(contentId);
 
-          const tmp = await this.newsLetterRepository.findOne({
-            where: { content: obj.context },
-          });
-          if (tmp) {
-            continue;
-          }
+      if (!news) {
+        const [content] = await axios.get(contentUrl).then((res) => {
+          const $ = cheerio.load(res.data);
+          const content = $('#topic_contents').text();
 
-          result.push(obj);
-          const today = new Date();
+          return [content];
+        });
 
-          const newsLetter = new NewsLetter();
-          newsLetter.title = obj.title;
-          newsLetter.content = obj.context;
-          newsLetter.thumbnailImageUrl = '';
-          newsLetter.redirectUrl = obj.url;
-          newsLetter.writtenAt = today;
-          newsLetter.deliveryExpiredAt = new Date(
-            today.setDate(today.getDate() + 7),
-          );
-          newsLetter.category = ENewsLetterCategory.DEVELOPER;
-          newsLetter.originSiteUrl = 'https://news.hada.io/new';
-          await this.newsLetterRepository.save(newsLetter);
-        }
-
-        return result;
-      });
-
-    return data;
+        const data: CreateNewsletterDto = {
+          title: title,
+          content: content,
+          thumbnailImageUrl: null,
+          redirectUrl: contentUrl,
+          writtenAt: Date.now().toString(),
+          deliveryExpiredAt: Date.now().toString(),
+          category: ENewsLetterCategory.DEVELOPER,
+          originSiteUrl: 'https://news.hada.io/new',
+          contentId: contentId,
+        };
+        await this.newsletterService.createNewsLetter(data);
+      }
+    }
   }
 }

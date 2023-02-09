@@ -12,10 +12,11 @@ export class CrawlerService {
 
   async crawler(): Promise<any> {
     for (let i = 1; i <= 20; i++) {
-      const [title, contentUrl, contentId] = await axios
-        .get('https://news.hada.io/new')
-        .then((res) => {
-          const $ = cheerio.load(res.data);
+      const TestApiCall = async () => {
+        try {
+          const response = await axios.get('https://news.hada.io/new');
+          const $ = cheerio.load(response.data);
+
           const title = $('#tr' + i).text();
           const contentId = $(
             'body > main > article > div > div:nth-child(' +
@@ -24,32 +25,33 @@ export class CrawlerService {
           ).attr('href');
           const contentUrl = 'https://news.hada.io/' + contentId;
 
-          return [title, contentUrl, contentId.split('=')[1]];
-        });
+          const news = await this.newsletterService.findContentId(contentId);
 
-      const news = await this.newsletterService.findContentId(contentId);
+          if (!news) {
+            const response2 = await axios.get(contentUrl);
+            const $2 = cheerio.load(response2.data);
+            const content = $2('#topic_contents').text();
 
-      if (!news) {
-        const [content] = await axios.get(contentUrl).then((res) => {
-          const $ = cheerio.load(res.data);
-          const content = $('#topic_contents').text();
+            const data: CreateNewsletterDto = {
+              title: title,
+              content: content,
+              thumbnailImageUrl: null,
+              redirectUrl: contentUrl,
+              writtenAt: Date.now().toString(),
+              deliveryExpiredAt: Date.now().toString(),
+              category: ENewsLetterCategory.DEVELOPER,
+              originSiteUrl: 'https://news.hada.io/new',
+              contentId: contentId,
+            };
 
-          return [content];
-        });
+            await this.newsletterService.createNewsLetter(data);
+          }
+        } catch (err) {
+          console.log('Error >>', err);
+        }
+      };
 
-        const data: CreateNewsletterDto = {
-          title: title,
-          content: content,
-          thumbnailImageUrl: null,
-          redirectUrl: contentUrl,
-          writtenAt: Date.now().toString(),
-          deliveryExpiredAt: Date.now().toString(),
-          category: ENewsLetterCategory.DEVELOPER,
-          originSiteUrl: 'https://news.hada.io/new',
-          contentId: contentId,
-        };
-        await this.newsletterService.createNewsLetter(data);
-      }
+      // async/await 를 활용하여 수정
     }
   }
 }

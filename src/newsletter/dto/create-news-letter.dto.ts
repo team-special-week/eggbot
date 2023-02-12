@@ -27,9 +27,5 @@ export class CreateNewsletterDto {
 
   @IsString()
   @Length(255)
-  originSiteUrl: string;
-
-  @IsString()
-  @Length(255)
   contentId: string;
 }

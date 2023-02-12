@@ -39,7 +39,6 @@ export class NewsletterService {
     newsLetter.writtenAt = now;
     newsLetter.deliveryExpiredAt = now;
     newsLetter.category = dto.category;
-    newsLetter.originSiteUrl = dto.originSiteUrl;
     await this.newsLetterRepository.save(newsLetter);
 
     return newsLetter;
@@ -47,7 +46,8 @@ export class NewsletterService {
 
   async findContentId(contentId: string): Promise<NewsLetter> {
     return this.newsLetterRepository.findOne({
-      where: {contentId : contentId},
+      // TODO : 나중에 수정할 예정
+      // where: {contentId : contentId}
     });
   }
 }

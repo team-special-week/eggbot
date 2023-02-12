@@ -6,8 +6,12 @@ import { CrawlerService } from './crawler.service';
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
+  testitNewsCrawler(): Promise<any> {
+    return this.crawlerService.crawlGeekNews();
+  }
+
   @Cron('0 00 06 * * *')
-  getHello(): Promise<any> {
-    return this.crawlerService.crawler();
+  itNewsCrawler(): Promise<any> {
+    return this.crawlerService.crawlGeekNews();
   }
 }

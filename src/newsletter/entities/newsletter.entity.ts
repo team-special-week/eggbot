@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -29,11 +28,18 @@ export class NewsLetter {
   content: string;
 
   @Column({
-    name: 'thumbnail_image_url',
-    type: 'text',
+    name: 'content_id',
+    type: 'varchar',
     nullable: false,
   })
-  thumbnailImageUrl: string;
+  contentId: string;
+
+  @Column({
+    name: 'thumbnail_image_url',
+    type: 'text',
+    nullable: true,
+  })
+  thumbnailImageUrl?: string;
 
   @Column({
     name: 'redirect_url',

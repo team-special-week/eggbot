@@ -27,7 +27,7 @@ import { NewsletterModule } from './newsletter/newsletter.module';
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),

@@ -1,17 +1,20 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CrawlerService } from './crawler.service';
+import { GeekNewsCrawlerService } from './geeknews/geeknews-crawler.service';
 
 @Controller('crawler')
 export class CrawlerController {
-  constructor(private readonly crawlerService: CrawlerService) {}
-
-  testitNewsCrawler(): Promise<any> {
-    return this.crawlerService.crawlGeekNews();
-  }
+  constructor(
+    private readonly geekNewsCrawlerService: GeekNewsCrawlerService,
+  ) {}
 
   @Cron('0 00 06 * * *')
-  itNewsCrawler(): Promise<any> {
-    return this.crawlerService.crawlGeekNews();
+  geekNewsCrawler() {
+    return this.geekNewsCrawlerService.crawling();
+  }
+
+  @Get('/geeknews')
+  testGeekNewsCrawler() {
+    return this.geekNewsCrawlerService.crawling();
   }
 }

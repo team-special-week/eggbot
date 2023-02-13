@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThan, Not, Repository } from 'typeorm';
 import { NewsLetter } from './entities/newsletter.entity';
 import { GetNewsletterToDeliveryDto } from './dto/get-newsletter-to-delivery.dto';
-import { CreateNewsletterDto } from './dto/create-news-letter.dto';
+import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 
 @Injectable()
 export class NewsletterService {
@@ -30,24 +30,16 @@ export class NewsletterService {
   }
 
   async createNewsLetter(dto: CreateNewsletterDto): Promise<NewsLetter> {
-    const newsLetter = new NewsLetter();
-    const now = new Date();
-    newsLetter.title = dto.title;
-    newsLetter.content = dto.content;
-    newsLetter.thumbnailImageUrl = dto.thumbnailImageUrl;
-    newsLetter.redirectUrl = dto.redirectUrl;
-    newsLetter.writtenAt = now;
-    newsLetter.deliveryExpiredAt = now;
-    newsLetter.category = dto.category;
-    await this.newsLetterRepository.save(newsLetter);
-
-    return newsLetter;
+    return this.newsLetterRepository.save(dto);
   }
 
-  async findContentId(contentId: string): Promise<NewsLetter> {
+  async getNewsLetterByContentId(
+    contentId: string,
+  ): Promise<NewsLetter | null> {
     return this.newsLetterRepository.findOne({
-      // TODO : 나중에 수정할 예정
-      // where: {contentId : contentId}
+      where: {
+        contentId,
+      },
     });
   }
 }

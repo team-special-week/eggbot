@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { NewsletterModule } from 'src/newsletter/newsletter.module';
 import { CrawlerController } from './crawler.controller';
-import { CrawlerService } from './crawler.service';
+import { GeekNewsCrawlerService } from './geeknews/geeknews-crawler.service';
 
 @Module({
   imports: [NewsletterModule],
   controllers: [CrawlerController],
-  providers: [CrawlerService],
-  exports: [CrawlerService],
+  providers: [GeekNewsCrawlerService],
 })
 export class CrawlerModule {}

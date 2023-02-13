@@ -6,5 +6,9 @@
   {
     "name": "unsubscribe",
     "description": "뉴스레터를 더 이상 받지 않도록 합니다."
+  },
+  {
+    "name": "dotnet",
+    "description": "닷넷데브 파싱"
   }
 ]

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { SubscribeService } from '../subscribe/subscribe.service';
 import {
   ActionRowBuilder,
-  Channel,
   ChatInputCommandInteraction,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,

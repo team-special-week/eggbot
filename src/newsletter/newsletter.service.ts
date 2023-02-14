@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThan, Not, Repository } from 'typeorm';
 import { NewsLetter } from './entities/newsletter.entity';
 import { GetNewsletterToDeliveryDto } from './dto/get-newsletter-to-delivery.dto';
+import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 
 @Injectable()
 export class NewsletterService {
@@ -26,5 +27,19 @@ export class NewsletterService {
       .orderBy('RAND()')
       .take(dto.size)
       .getMany();
+  }
+
+  async createNewsLetter(dto: CreateNewsletterDto): Promise<NewsLetter> {
+    return this.newsLetterRepository.save(dto);
+  }
+
+  async getNewsLetterByContentId(
+    contentId: string,
+  ): Promise<NewsLetter | null> {
+    return this.newsLetterRepository.findOne({
+      where: {
+        contentId,
+      },
+    });
   }
 }

@@ -1,4 +1,9 @@
-import { IsAlphanumeric, IsString, validateSync } from 'class-validator';
+import {
+  IsAlphanumeric,
+  IsNumber,
+  IsString,
+  validateSync,
+} from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
 class EnvironmentVariables {
@@ -22,6 +27,12 @@ class EnvironmentVariables {
 
   @IsString()
   EGGBOT_CLIENT_ID: string;
+
+  @IsString()
+  GEEKNEWS_URL: string;
+
+  @IsNumber()
+  DELIVERY_EXPIRED_DAY: number;
 }
 
 export function validate(configuration: Record<string, unknown>) {

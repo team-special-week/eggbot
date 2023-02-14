@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { SubscribeService } from '../subscribe/subscribe.service';
 import {
   ActionRowBuilder,
-  ChannelType,
   ChatInputCommandInteraction,
   EmbedBuilder,
   StringSelectMenuBuilder,
@@ -16,6 +15,11 @@ import DiscordInteractionReply from '../common/types/discordInteractionReplyType
 import { CreateSubscribeDto } from 'src/subscribe/dto/create-subscribe.dto';
 import { NewsLetter } from '../newsletter/entities/newsletter.entity';
 import { DiscordController } from './discord.controller';
+import {
+  FriendlySiteName,
+  OriginSiteURL,
+  SiteIcon,
+} from '../common/enums/newsLetterProvider';
 
 @Injectable()
 export class DiscordService {
@@ -90,7 +94,6 @@ export class DiscordService {
     const client = DiscordController.client;
     const channel = client.channels.cache.get(channelId);
 
-    console.log(!(channel instanceof TextChannel), newsLetters.length);
     if (!(channel instanceof TextChannel)) {
       return;
     }
@@ -101,16 +104,18 @@ export class DiscordService {
           .setTitle(newsLetter.title)
           .setURL(newsLetter.redirectUrl)
           .setAuthor({
-            name: 'Friendly Name',
-            iconURL: 'https://i.imgur.com/AfFp7pu.png',
-            url: newsLetter.originSiteUrl,
+            name:
+              newsLetter.writerUsername ??
+              FriendlySiteName[newsLetter.provider],
+            iconURL:
+              newsLetter.writerThumbnail ?? SiteIcon[newsLetter.provider],
           })
           .setDescription(newsLetter.content)
           .setImage(newsLetter.thumbnailImageUrl)
-          .setTimestamp()
+          .setTimestamp(newsLetter.writtenAt)
           .setFooter({
-            text: 'Powered by Eggbot Paperboy',
-            iconURL: 'https://i.imgur.com/AfFp7pu.png',
+            text: OriginSiteURL[newsLetter.provider],
+            iconURL: SiteIcon[newsLetter.provider],
           }),
       ),
     });

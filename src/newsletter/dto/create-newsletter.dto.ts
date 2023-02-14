@@ -6,6 +6,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ENewsLetterCategory } from 'src/common/enums/newsLetterCategory';
+import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 
 export class CreateNewsletterDto {
   @IsString()
@@ -35,6 +36,6 @@ export class CreateNewsletterDto {
   @IsEnum(ENewsLetterCategory)
   category: ENewsLetterCategory;
 
-  @IsString()
-  originSiteUrl: string;
+  @IsEnum(ENewsLetterProvider)
+  provider: ENewsLetterProvider;
 }

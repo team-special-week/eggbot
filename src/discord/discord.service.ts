@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { SubscribeService } from '../subscribe/subscribe.service';
 import {
   ActionRowBuilder,
+  ChannelType,
   ChatInputCommandInteraction,
+  EmbedBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
+  TextChannel,
 } from 'discord.js';
 import { NewsLetterCategoryDropdown } from '../common/enums/newsLetterCategory';
 import transformAndValidate from '../common/utils/transformAndValidate';
@@ -85,7 +88,31 @@ export class DiscordService {
 
   async deliveryNewsLetter(channelId: string, newsLetters: NewsLetter[]) {
     const client = DiscordController.client;
-    client.guilds.cache.get(channelId);
-    (client.channels.cache.get(channelId) as any).send('test');
+    const channel = client.channels.cache.get(channelId);
+
+    console.log(!(channel instanceof TextChannel), newsLetters.length);
+    if (!(channel instanceof TextChannel)) {
+      return;
+    }
+
+    await channel.send({
+      embeds: newsLetters.map((newsLetter) =>
+        new EmbedBuilder()
+          .setTitle(newsLetter.title)
+          .setURL(newsLetter.redirectUrl)
+          .setAuthor({
+            name: 'Friendly Name',
+            iconURL: 'https://i.imgur.com/AfFp7pu.png',
+            url: newsLetter.originSiteUrl,
+          })
+          .setDescription(newsLetter.content)
+          .setImage(newsLetter.thumbnailImageUrl)
+          .setTimestamp()
+          .setFooter({
+            text: 'Powered by Eggbot Paperboy',
+            iconURL: 'https://i.imgur.com/AfFp7pu.png',
+          }),
+      ),
+    });
   }
 }

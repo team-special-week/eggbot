@@ -35,7 +35,7 @@ export class PaperboyService {
           GetNewsletterToDeliveryDto,
           {
             newsLetterCategory: setting.newLetterCategory,
-            size: randInt(4, 7),
+            size: randInt(1, 2),
             ignoreIDs: deliveryLogs.map((deliveryLog) => deliveryLog._id),
           },
         );

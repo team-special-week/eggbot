@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { ENewsLetterCategory } from '../../common/enums/newsLetterCategory';
 import { DeliveryLog } from '../../paperboy/entities/delivery-log.entity';
+import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 
 @Entity('eb_newsletters')
 export class NewsLetter {
@@ -49,6 +50,20 @@ export class NewsLetter {
   redirectUrl: string;
 
   @Column({
+    name: 'writer_thumbnail',
+    type: 'varchar',
+    nullable: true,
+  })
+  writerThumbnail?: string;
+
+  @Column({
+    name: 'writer_username',
+    type: 'varchar',
+    nullable: true,
+  })
+  writerUsername?: string;
+
+  @Column({
     name: 'written_at',
     type: 'datetime',
     nullable: false,
@@ -70,11 +85,11 @@ export class NewsLetter {
   category: ENewsLetterCategory;
 
   @Column({
-    name: 'origin_site_url',
-    type: 'varchar',
-    nullable: false,
+    type: 'enum',
+    name: 'provider',
+    enum: ENewsLetterProvider,
   })
-  originSiteUrl: string;
+  provider: ENewsLetterProvider;
 
   @OneToMany(() => DeliveryLog, (deliveryLog) => deliveryLog.newsLetter)
   deliveryLogs: DeliveryLog[];

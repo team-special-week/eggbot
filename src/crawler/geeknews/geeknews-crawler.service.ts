@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import cheerio from 'cheerio';
 import { NewsletterService } from '../../newsletter/newsletter.service';
 import { GeekNewsDto } from './dto/geeknews.dto';
@@ -9,6 +8,7 @@ import { addDays, subDays, subHours, subMinutes, subMonths } from 'date-fns';
 import loadPage from '../../common/utils/loadPage';
 import { CreateNewsletterDto } from '../../newsletter/dto/create-newsletter.dto';
 import { ENewsLetterCategory } from '../../common/enums/newsLetterCategory';
+import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 
 @Injectable()
 export class GeekNewsCrawlerService {
@@ -50,7 +50,7 @@ export class GeekNewsCrawlerService {
       {
         ...dto,
         category: ENewsLetterCategory.DEVELOPER,
-        originSiteUrl: this.GEEK_NEWS_URL,
+        provider: ENewsLetterProvider.GEEK_NEWS,
       },
     );
 

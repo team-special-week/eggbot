@@ -15,6 +15,11 @@ export class CrawlerController {
     return this.geekNewsCrawlerService.crawling();
   }
 
+  @Cron('0 00 06 * * *')
+  suppleCrawler() {
+    return this.suppleCrawlerService.crawling();
+  }
+
   @Get('/geeknews')
   testGeekNewsCrawler() {
     return this.geekNewsCrawlerService.crawling();

@@ -13,7 +13,7 @@ import { CreateNewsletterDto } from 'src/newsletter/dto/create-newsletter.dto';
 export class SuppleCrawlerService {
   private readonly SUPPLE_URL: string;
   private readonly DELIVERY_EXPIRED_DAY: number;
-  private readonly NEWS_SIZE = 10;
+  private readonly NEWS_SIZE = 30;
 
   constructor(
     private readonly configService: ConfigService,
@@ -26,10 +26,11 @@ export class SuppleCrawlerService {
   }
 
   async crawling() {
-    const $ = await this.getJson(`${this.SUPPLE_URL}=${this.NEWS_SIZE}`); // 추상화 필요
+    const $ = await this.getJson(`${this.SUPPLE_URL}=${this.NEWS_SIZE}`);
+    // 추상화가 좀 필요할 것 같아요
+
     for (const index in $) {
       const news = await this.parseSupple($, index);
-      // 이미지를 어떻게 하면 잘 불러올지 생각을 해야할 것 같습니다.
       const isExists = !!(await this.newsletterService.getNewsLetterByContentId(
         news.contentId,
       ));
@@ -46,27 +47,27 @@ export class SuppleCrawlerService {
     return result;
   }
 
-  private async parseSupple($, index: string): Promise<SuppleDto> {
+  private async parseSupple($: JSON, index: string): Promise<SuppleDto> {
     const _node = $[index].node;
+    const _id = _node.id;
+    const _source = _node.source;
 
     const title = _node.title;
     const content = _node.desc;
-    const contentId = _node.id;
-    const _thumbnailImageUrl = _node.thumbnail;
-    const _redirectUrl = _node.url;
+    const contentId = _id.substring(9, 15);
+    const thumbnailImageUrl = `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.thumbnailKey}`;
+    const redirectUrl = `https://supple.kr/feed/${_id}`;
     const writtenAt = new Date(_node.createdAt);
     const deliveryExpiredAt = addDays(writtenAt, this.DELIVERY_EXPIRED_DAY);
     const writerUsername = _node.author;
-    const writerThumbnail = _node.source.iconKey;
-
-    // 변수 명에 _의 의미는 뭔가요?
+    const writerThumbnail = `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_source.iconKey}`;
 
     return transformAndValidate(SuppleDto, {
       title: title,
       content,
       contentId,
-      thumbnailImageUrl: _thumbnailImageUrl,
-      redirectUrl: _redirectUrl,
+      thumbnailImageUrl,
+      redirectUrl,
       writtenAt,
       deliveryExpiredAt,
       writerThumbnail,
@@ -80,7 +81,7 @@ export class SuppleCrawlerService {
       {
         ...dto,
         category: ENewsLetterCategory.DEVELOPER,
-        provider: ENewsLetterProvider.GEEK_NEWS,
+        provider: ENewsLetterProvider.SUPPLE,
       },
     );
 

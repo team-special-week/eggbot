@@ -25,8 +25,10 @@ export class SuppleDto {
   deliveryExpiredAt: Date;
 
   @IsString()
-  writerThumbnail: string;
+  @IsOptional()
+  writerThumbnail?: string;
 
   @IsString()
-  writerUsername: string;
+  @IsOptional()
+  writerUsername?: string;
 }

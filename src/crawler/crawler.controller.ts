@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { GeekNewsCrawlerService } from './geeknews/geeknews-crawler.service';
 import { DotNetDevCrawlerService } from './dotnetdev/dotnetdev-crawler.service';
 import { SuppleCrawlerService } from './supple/supple-crawler.service';
+import ESuppleTagName from '../common/enums/suppleTagName';
 
 @Controller('crawler')
 export class CrawlerController {
@@ -17,9 +18,9 @@ export class CrawlerController {
     return this.geekNewsCrawlerService.crawling();
   }
 
-  @Cron('0 00 06 * * *')
+  @Cron('0 20 06 * * *')
   suppleCrawler() {
-    return this.suppleCrawlerService.crawling();
+    return this.suppleCrawlerService.crawling(ESuppleTagName.IT_STORY);
   }
 
   @Get('/geeknews')
@@ -29,7 +30,7 @@ export class CrawlerController {
 
   @Get('/supple')
   testSuppleCrawler() {
-    return this.suppleCrawlerService.crawling();
+    return this.suppleCrawlerService.crawling(ESuppleTagName.IT_STORY);
   }
 
   @Get('/dotnetdev')

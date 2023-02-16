@@ -8,7 +8,8 @@ import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 import axios from 'axios';
 import { SuppleDto } from './dto/supple.dto';
 import { CreateNewsletterDto } from 'src/newsletter/dto/create-newsletter.dto';
-import { News } from 'src/common/types/newsType';
+import ESuppleTagName from '../../common/enums/suppleTagName';
+import SuppleNodeType from '../../common/types/suppleResponseType';
 
 @Injectable()
 export class SuppleCrawlerService {
@@ -26,64 +27,57 @@ export class SuppleCrawlerService {
     );
   }
 
-  async crawling() {
-    const newsDetails = await this.getSuppleAPI(
-      `${this.SUPPLE_URL}=${this.NEWS_SIZE}`,
-    );
+  async crawling(tag: ESuppleTagName) {
+    const suppleNodes = await this.requestSuppleAPI(tag);
 
-    for (const index in newsDetails) {
-      const news = await this.createSuppleDto(newsDetails, Number(index));
+    for (const node of suppleNodes) {
+      const suppleDto = await this.parsingSuppleResponse(node);
       const isExists = !!(await this.newsletterService.getNewsLetterByContentId(
-        news.contentId,
+        suppleDto.contentId,
       ));
 
       if (!isExists) {
-        await this.createNewsLetter(news);
+        await this.createNewsLetter(suppleDto);
       }
     }
   }
 
-  private async getSuppleAPI(url: string) {
-    const response = await axios.get(url);
+  private async requestSuppleAPI(
+    tag: ESuppleTagName,
+  ): Promise<SuppleNodeType[]> {
+    const response = await axios.get(this.SUPPLE_URL, {
+      params: {
+        tagName: tag,
+        first: this.NEWS_SIZE,
+      },
+    });
+
     if (response.status !== 200 || !response.data) {
-      throw new Error(`${url} is not healthy.`);
+      throw new Error(`${this.SUPPLE_URL} is not healthy.`);
     }
 
-    const result: News = response.data.data.edges;
-    return result;
+    const data: any[] = response.data?.data?.edges;
+    if (!data) {
+      throw new Error('supple data is empty.');
+    }
+
+    return data.map((d) => d.node as SuppleNodeType);
   }
 
-  private async createSuppleDto(
-    newsDetails: News,
-    index: number,
-  ): Promise<SuppleDto> {
-    const _node = newsDetails[index].node;
-    if (_node === undefined || _node === null || _node === '') {
-      throw new Error(`'_node' is not healthy.`);
-    }
-    const _id = _node.id;
-    const _source = _node.source;
-
-    const title = _node.title;
-    const content = _node.desc;
-    const contentId = _id;
-    const thumbnailImageUrl = `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.thumbnailKey}`;
-    const redirectUrl = `https://supple.kr/feed/${_id}`;
-    const writtenAt = new Date(_node.createdAt);
-    const deliveryExpiredAt = addDays(writtenAt, this.DELIVERY_EXPIRED_DAY);
-    const writerUsername = _node.author;
-    const writerThumbnail = `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_source.iconKey}`;
-
+  private parsingSuppleResponse(_node: SuppleNodeType): Promise<SuppleDto> {
     return transformAndValidate(SuppleDto, {
-      title: title,
-      content,
-      contentId,
-      thumbnailImageUrl,
-      redirectUrl,
-      writtenAt,
-      deliveryExpiredAt,
-      writerThumbnail,
-      writerUsername,
+      title: _node.title,
+      content: _node.desc,
+      contentId: _node.id,
+      thumbnailImageUrl: `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.thumbnailKey}`,
+      redirectUrl: `https://supple.kr/feed/${_node.id}`,
+      writtenAt: new Date(_node.releasedAt),
+      deliveryExpiredAt: addDays(
+        new Date(_node.releasedAt),
+        this.DELIVERY_EXPIRED_DAY,
+      ),
+      writerUsername: _node.author,
+      writerThumbnail: `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.source.iconKey}`,
     });
   }
 

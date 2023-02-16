@@ -33,6 +33,14 @@ jobs:
 
     - name: Bootup server
       uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        EGGBOT_TOKEN: ${{ secrets.EGGBOT_TOKEN }}
+        EGGBOT_CLIENT_ID: ${{ secrets.EGGBOT_CLIENT_ID }}
       with:
         host: backdoor.ballbot.dev
         user: ${{ secrets.POSTOFFICE_NAME }}

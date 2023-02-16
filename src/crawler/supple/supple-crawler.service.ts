@@ -8,6 +8,7 @@ import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 import axios from 'axios';
 import { SuppleDto } from './dto/supple.dto';
 import { CreateNewsletterDto } from 'src/newsletter/dto/create-newsletter.dto';
+import { News } from 'src/common/types/newsType';
 
 @Injectable()
 export class SuppleCrawlerService {
@@ -26,11 +27,12 @@ export class SuppleCrawlerService {
   }
 
   async crawling() {
-    const $ = await this.getJson(`${this.SUPPLE_URL}=${this.NEWS_SIZE}`);
-    // 추상화가 좀 필요할 것 같아요
+    const newsDetails = await this.getSuppleAPI(
+      `${this.SUPPLE_URL}=${this.NEWS_SIZE}`,
+    );
 
-    for (const index in $) {
-      const news = await this.parseSupple($, index);
+    for (const index in newsDetails) {
+      const news = await this.createSuppleDto(newsDetails, Number(index));
       const isExists = !!(await this.newsletterService.getNewsLetterByContentId(
         news.contentId,
       ));
@@ -41,20 +43,30 @@ export class SuppleCrawlerService {
     }
   }
 
-  private async getJson(url: string) {
-    const datas = await axios.get(url);
-    const result = datas.data.data.edges;
+  private async getSuppleAPI(url: string) {
+    const response = await axios.get(url);
+    if (response.status !== 200 || !response.data) {
+      throw new Error(`${url} is not healthy.`);
+    }
+
+    const result: News = response.data.data.edges;
     return result;
   }
 
-  private async parseSupple($: JSON, index: string): Promise<SuppleDto> {
-    const _node = $[index].node;
+  private async createSuppleDto(
+    newsDetails: News,
+    index: number,
+  ): Promise<SuppleDto> {
+    const _node = newsDetails[index].node;
+    if (_node === undefined || _node === null || _node === '') {
+      throw new Error(`'_node' is not healthy.`);
+    }
     const _id = _node.id;
     const _source = _node.source;
 
     const title = _node.title;
     const content = _node.desc;
-    const contentId = _id.substring(9, 15);
+    const contentId = _id;
     const thumbnailImageUrl = `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.thumbnailKey}`;
     const redirectUrl = `https://supple.kr/feed/${_id}`;
     const writtenAt = new Date(_node.createdAt);

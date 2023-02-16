@@ -27,9 +27,7 @@ jobs:
         file: ./Dockerfile
         push: false
         tags: eggbot:latest
-
-    - name: Extract docker image
-      run: /usr/bin/docker save -o eggbot.tar eggbot:latest
+    - run: /usr/bin/docker save -o eggbot.tar eggbot:latest
 
     - name: Send docker image to server
       uses: appleboy/scp-action@master

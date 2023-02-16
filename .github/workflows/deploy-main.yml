@@ -42,6 +42,6 @@ jobs:
         first_ssh: |
           docker stop eggbot || true
           docker rm eggbot || true
-          docker image rm eggbot:latest
+          docker image rm eggbot:latest || true
           docker load -i /home/postoffice/eggbot/eggbot.tar
           docker run -d -p 37463:3000 --name eggbot eggbot:latest

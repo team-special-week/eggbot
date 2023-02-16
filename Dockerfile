@@ -7,7 +7,8 @@ COPY ./ /app
 
 RUN apk add --update nodejs npm
 RUN npm ci
+RUN npm install -g pm2
 RUN npm run build
 
 EXPOSE 3000
-ENTRYPOINT ["node", "/app/dist/main.js"]
+ENTRYPOINT ["pm2-runtime", "/app/dist/main.js"]

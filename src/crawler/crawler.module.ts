@@ -8,7 +8,10 @@ import { SuppleCrawlerService } from './supple/supple-crawler.service';
 @Module({
   imports: [NewsletterModule],
   controllers: [CrawlerController],
-  providers: [GeekNewsCrawlerService, DotNetDevCrawlerService],
-  providers: [GeekNewsCrawlerService, SuppleCrawlerService],
+  providers: [
+    GeekNewsCrawlerService,
+    DotNetDevCrawlerService,
+    SuppleCrawlerService,
+  ],
 })
 export class CrawlerModule {}

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NewsletterService } from '../../newsletter/newsletter.service';
 import transformAndValidate from '../../common/utils/transformAndValidate';
 import { addDays } from 'date-fns';
@@ -10,22 +9,13 @@ import { SuppleDto } from './dto/supple.dto';
 import { CreateNewsletterDto } from 'src/newsletter/dto/create-newsletter.dto';
 import ESuppleTagName from '../../common/enums/suppleTagName';
 import SuppleNodeType from '../../common/types/suppleResponseType';
+import { SUPPLE_URL, DELIVERY_EXPIRED_DAY } from 'src/config/constant';
 
 @Injectable()
 export class SuppleCrawlerService {
-  private readonly SUPPLE_URL: string;
-  private readonly DELIVERY_EXPIRED_DAY: number;
   private readonly NEWS_SIZE = 30;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly newsletterService: NewsletterService,
-  ) {
-    this.SUPPLE_URL = this.configService.get<string>('SUPPLE_URL');
-    this.DELIVERY_EXPIRED_DAY = this.configService.get<number>(
-      'DELIVERY_EXPIRED_DAY',
-    );
-  }
+  constructor(private readonly newsletterService: NewsletterService) {}
 
   async crawling(tag: ESuppleTagName) {
     const suppleNodes = await this.requestSuppleAPI(tag);
@@ -45,7 +35,7 @@ export class SuppleCrawlerService {
   private async requestSuppleAPI(
     tag: ESuppleTagName,
   ): Promise<SuppleNodeType[]> {
-    const response = await axios.get(this.SUPPLE_URL, {
+    const response = await axios.get(SUPPLE_URL, {
       params: {
         tagName: tag,
         first: this.NEWS_SIZE,
@@ -53,7 +43,7 @@ export class SuppleCrawlerService {
     });
 
     if (response.status !== 200 || !response.data) {
-      throw new Error(`${this.SUPPLE_URL} is not healthy.`);
+      throw new Error(`${SUPPLE_URL} is not healthy.`);
     }
 
     const data: any[] = response.data?.data?.edges;
@@ -74,7 +64,7 @@ export class SuppleCrawlerService {
       writtenAt: new Date(_node.releasedAt),
       deliveryExpiredAt: addDays(
         new Date(_node.releasedAt),
-        this.DELIVERY_EXPIRED_DAY,
+        DELIVERY_EXPIRED_DAY,
       ),
       writerUsername: _node.author,
       writerThumbnail: `https://supple-attachment.s3.ap-northeast-2.amazonaws.com/${_node.source.iconKey}`,

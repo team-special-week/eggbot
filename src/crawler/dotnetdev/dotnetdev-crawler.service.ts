@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NewsletterService } from '../../newsletter/newsletter.service';
 import { DotNetDevDto } from './dto/dotnetdev.dto';
 import transformAndValidate from '../../common/utils/transformAndValidate';
@@ -9,10 +8,7 @@ import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
 
 @Injectable()
 export class DotNetDevCrawlerService {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly newsletterService: NewsletterService,
-  ) {}
+  constructor(private readonly newsletterService: NewsletterService) {}
 
   async crawling() {
     const newsLetters = await this.callParser();

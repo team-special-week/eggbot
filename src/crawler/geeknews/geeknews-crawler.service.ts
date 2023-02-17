@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import cheerio from 'cheerio';
 import { NewsletterService } from '../../newsletter/newsletter.service';
 import { GeekNewsDto } from './dto/geeknews.dto';
 import transformAndValidate from '../../common/utils/transformAndValidate';
@@ -9,25 +7,16 @@ import loadPage from '../../common/utils/loadPage';
 import { CreateNewsletterDto } from '../../newsletter/dto/create-newsletter.dto';
 import { ENewsLetterCategory } from '../../common/enums/newsLetterCategory';
 import { ENewsLetterProvider } from '../../common/enums/newsLetterProvider';
+import { GEEKNEWS_URL, DELIVERY_EXPIRED_DAY } from 'src/config/constant';
 
 @Injectable()
 export class GeekNewsCrawlerService {
-  private readonly GEEK_NEWS_URL: string;
-  private readonly DELIVERY_EXPIRED_DAY: number;
   private readonly NEWS_SIZE = 15;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly newsletterService: NewsletterService,
-  ) {
-    this.GEEK_NEWS_URL = this.configService.get<string>('GEEKNEWS_URL');
-    this.DELIVERY_EXPIRED_DAY = this.configService.get<number>(
-      'DELIVERY_EXPIRED_DAY',
-    );
-  }
+  constructor(private readonly newsletterService: NewsletterService) {}
 
   async crawling() {
-    const $ = await loadPage(`${this.GEEK_NEWS_URL}/new`);
+    const $ = await loadPage(`${GEEKNEWS_URL}/new`);
 
     for (let i = 1; i < this.NEWS_SIZE + 1; ++i) {
       const news = await this.parseGeekNews($, i);
@@ -66,11 +55,11 @@ export class GeekNewsCrawlerService {
     const _contentUrl = `${_topic} > div.topicdesc > a`;
 
     const redirectUrl = new URL(
-      `${this.GEEK_NEWS_URL}/${$(_topic + _contentUrl).attr('href')}`,
+      `${GEEKNEWS_URL}/${$(_topic + _contentUrl).attr('href')}`,
     );
     const contentId = redirectUrl.searchParams.get('id');
     const writtenAt = this.parseWrittenAt($, _topic);
-    const deliveryExpiredAt = addDays(writtenAt, this.DELIVERY_EXPIRED_DAY);
+    const deliveryExpiredAt = addDays(writtenAt, DELIVERY_EXPIRED_DAY);
 
     return transformAndValidate(GeekNewsDto, {
       title: $(_topic + _title).text(),

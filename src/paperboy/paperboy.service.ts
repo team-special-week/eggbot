@@ -1,4 +1,4 @@
-import { Injectable, Logger, LoggerService } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DeliveryLog } from './entities/delivery-log.entity';
@@ -8,6 +8,7 @@ import { GetNewsletterToDeliveryDto } from '../newsletter/dto/get-newsletter-to-
 import transformAndValidate from '../common/utils/transformAndValidate';
 import randInt from '../common/utils/randInt';
 import { DiscordService } from '../discord/discord.service';
+import { PAPERBOY_MAX_CNT, PAPERBOY_MIN_CNT } from 'src/config/constant';
 
 @Injectable()
 export class PaperboyService {
@@ -35,7 +36,7 @@ export class PaperboyService {
           GetNewsletterToDeliveryDto,
           {
             newsLetterCategory: setting.newLetterCategory,
-            size: randInt(1, 2),
+            size: randInt(PAPERBOY_MIN_CNT, PAPERBOY_MAX_CNT),
             ignoreIDs: deliveryLogs.map((deliveryLog) => deliveryLog._id),
           },
         );

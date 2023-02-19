@@ -110,7 +110,11 @@ export class DiscordService {
             iconURL:
               newsLetter.writerThumbnail ?? SiteIcon[newsLetter.provider],
           })
-          .setDescription(newsLetter.content)
+          .setDescription(
+            `${newsLetter.content.substring(0, 200)}${
+              newsLetter.content.length > 200 ? '...' : ''
+            }`,
+          )
           .setImage(newsLetter.thumbnailImageUrl)
           .setTimestamp(newsLetter.writtenAt)
           .setFooter({

@@ -42,4 +42,12 @@ export class NewsletterService {
       },
     });
   }
+
+  async getNewsLetterById(id: number) {
+    return this.newsLetterRepository.findOne({
+      where: {
+        _id: id,
+      },
+    });
+  }
 }

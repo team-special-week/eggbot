@@ -9,6 +9,7 @@ import transformAndValidate from '../common/utils/transformAndValidate';
 import randInt from '../common/utils/randInt';
 import { DiscordService } from '../discord/discord.service';
 import { PAPERBOY_MAX_CNT, PAPERBOY_MIN_CNT } from 'src/config/constant';
+import { CreateDeliveryLogDto } from './dto/create-delivery-log.dto';
 
 @Injectable()
 export class PaperboyService {
@@ -50,6 +51,18 @@ export class PaperboyService {
           subscribe.channelId,
           newsLetterToDelivery,
         );
+
+        const createDeliveryLogDto = await transformAndValidate(
+          CreateDeliveryLogDto,
+          {
+            newsLetterId: newsLetterToDelivery.map(
+              (newsLetter) => newsLetter._id,
+            ),
+            channelId: subscribe.channelId,
+          },
+        );
+
+        await this.createDeliveryLog(createDeliveryLogDto);
       } catch (ex) {
         this.logger.error(ex);
       }
@@ -62,5 +75,24 @@ export class PaperboyService {
         channelId,
       },
     });
+  }
+
+  async createDeliveryLog(dto: CreateDeliveryLogDto) {
+    return Promise.all(
+      dto.newsLetterId.map(async (newsLetterId) => {
+        const newsLetter = await this.newsLetterService.getNewsLetterById(
+          newsLetterId,
+        );
+
+        if (!newsLetter) {
+          throw new Error(`${dto.newsLetterId} newsLetter is not found.`);
+        }
+
+        await this.deliveryLogRepository.save({
+          newsLetter,
+          channelId: dto.channelId,
+        });
+      }),
+    );
   }
 }

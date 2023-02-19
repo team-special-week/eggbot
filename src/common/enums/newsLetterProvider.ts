@@ -11,10 +11,11 @@ export const OriginSiteURL = {
 };
 
 export const SiteIcon = {
-  [ENewsLetterProvider.DOT_NET_DEV]:
-    'https://discourse-dotnetdev-upload.ewr1.vultrobjects.com/original/1X/733ba4d0a11f167d295a4a7257e40bcbc93d91bb.png',
-  [ENewsLetterProvider.SUPPLE]: 'https://supple.kr/favicon.ico',
-  [ENewsLetterProvider.GEEK_NEWS]: 'https://news.hada.io/favicon.ico',
+  [ENewsLetterProvider.DOT_NET_DEV]: '',
+  [ENewsLetterProvider.SUPPLE]:
+    'https://firebasestorage.googleapis.com/v0/b/eggbot-7bf3a.appspot.com/o/supple.png?alt=media&token=38306310-237b-4d0d-9efd-2ee2e0a55be7',
+  [ENewsLetterProvider.GEEK_NEWS]:
+    'https://firebasestorage.googleapis.com/v0/b/eggbot-7bf3a.appspot.com/o/geeknews.png?alt=media&token=d4e85e8a-2de3-4aac-8f45-790dc9c8b28b',
 };
 
 export const FriendlySiteName = {

@@ -13,13 +13,14 @@ import transformAndValidate from '../common/utils/transformAndValidate';
 import { RemoveSubscribeDto } from '../subscribe/dto/remove-subscribe.dto';
 import DiscordInteractionReply from '../common/types/discordInteractionReplyType';
 import { CreateSubscribeDto } from 'src/subscribe/dto/create-subscribe.dto';
-import { NewsLetter } from '../newsletter/entities/newsletter.entity';
 import { DiscordController } from './discord.controller';
 import {
   FriendlySiteName,
   OriginSiteURL,
   SiteIcon,
 } from '../common/enums/newsLetterProvider';
+import SendNewsLetterDto from './dto/send-newsletter.dto';
+import { NEWS_LETTER_LENGTH } from '../config/constant';
 
 @Injectable()
 export class DiscordService {
@@ -90,7 +91,9 @@ export class DiscordService {
     };
   }
 
-  async deliveryNewsLetter(channelId: string, newsLetters: NewsLetter[]) {
+  async sendNewsLetter(dto: SendNewsLetterDto) {
+    const { newsLetters, channelId } = dto;
+
     const client = DiscordController.client;
     const channel = client.channels.cache.get(channelId);
 
@@ -111,8 +114,8 @@ export class DiscordService {
               newsLetter.writerThumbnail ?? SiteIcon[newsLetter.provider],
           })
           .setDescription(
-            `${newsLetter.content.substring(0, 200)}${
-              newsLetter.content.length > 200 ? '...' : ''
+            `${newsLetter.content.substring(0, NEWS_LETTER_LENGTH)}${
+              newsLetter.content.length > NEWS_LETTER_LENGTH ? '...' : ''
             }`,
           )
           .setImage(newsLetter.thumbnailImageUrl)

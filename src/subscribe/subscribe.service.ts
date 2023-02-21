@@ -17,7 +17,7 @@ export class SubscribeService {
 
   async createSubscribe(dto: CreateSubscribeDto): Promise<Subscribe> {
     const setting = new SubscribeSetting();
-    setting.newLetterCategory = dto.newsLetterCategory;
+    setting.newsLetterCategory = dto.newsLetterCategory;
     await this.subscribeSettingRepository.save(setting);
 
     const subscribe = new Subscribe();

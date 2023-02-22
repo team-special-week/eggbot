@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -17,6 +18,7 @@ export class Subscribe {
   @JoinColumn()
   setting: SubscribeSetting;
 
+  @Index('uq_channel_id', { unique: true })
   @Column({
     name: 'channel_id',
     type: 'varchar',

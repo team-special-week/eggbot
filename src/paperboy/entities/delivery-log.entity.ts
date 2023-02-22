@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -12,6 +13,7 @@ export class DeliveryLog {
   @PrimaryGeneratedColumn()
   _id: number;
 
+  @Index('channel_id')
   @Column({
     name: 'channel_id',
     type: 'varchar',

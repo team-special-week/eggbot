@@ -27,7 +27,4 @@ export class DotNetDevDto {
 
   @IsDate()
   writtenAt: Date;
-
-  @IsDate()
-  deliveryExpiredAt: Date;
 }

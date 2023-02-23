@@ -27,12 +27,6 @@ class EnvironmentVariables {
 
   @IsString()
   EGGBOT_CLIENT_ID: string;
-
-  @IsString()
-  GEEKNEWS_URL: string;
-
-  @IsNumber()
-  DELIVERY_EXPIRED_DAY: number;
 }
 
 export function validate(configuration: Record<string, unknown>) {

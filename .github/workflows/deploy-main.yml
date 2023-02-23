@@ -41,6 +41,7 @@ jobs:
         DB_NAME: ${{ secrets.DB_NAME }}
         EGGBOT_TOKEN: ${{ secrets.EGGBOT_TOKEN }}
         EGGBOT_CLIENT_ID: ${{ secrets.EGGBOT_CLIENT_ID }}
+        PWD: /app
       with:
         host: backdoor.ballbot.dev
         user: ${{ secrets.POSTOFFICE_NAME }}
@@ -52,4 +53,4 @@ jobs:
           docker rm eggbot || true
           docker image rm eggbot:latest || true
           docker load -i /home/postoffice/eggbot/eggbot.tar
-          docker run -d -p 37463:3000 -e DB_USER=$DB_USER -e DB_HOST=$DB_HOST -e DB_PASS=$DB_PASS -e DB_PORT=$DB_PORT -e DB_NAME=$DB_NAME -e EGGBOT_TOKEN=$EGGBOT_TOKEN -e EGGBOT_CLIENT_ID=$EGGBOT_CLIENT_ID --name eggbot eggbot:latest
+          docker run -d -p 37463:3000 -e DB_USER=$DB_USER -e DB_HOST=$DB_HOST -e DB_PASS=$DB_PASS -e DB_PORT=$DB_PORT -e DB_NAME=$DB_NAME -e EGGBOT_TOKEN=$EGGBOT_TOKEN -e EGGBOT_CLIENT_ID=$EGGBOT_CLIENT_ID -e PWD=$PWD --name eggbot eggbot:latest

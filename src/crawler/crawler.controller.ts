@@ -23,6 +23,11 @@ export class CrawlerController {
     return this.suppleCrawlerService.crawling(ESuppleTagName.IT_STORY);
   }
 
+  @Cron('0 40 06 * * *')
+  dotnetdevCrawler() {
+    return this.dotnetdevCrawlerService.crawling();
+  }
+
   @Get('/geeknews')
   geekNewsCrawlerTest() {
     return this.geekNewsCrawlerService.crawling();

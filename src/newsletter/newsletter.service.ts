@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThan, Not, Repository } from 'typeorm';
 import { NewsLetter } from './entities/newsletter.entity';
-import { GetNewsletterToDeliveryDto } from './dto/get-newsletter-to-delivery.dto';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
+import GetNewsLetterDto from './dto/get-newsletter.dto';
 
 @Injectable()
 export class NewsletterService {
@@ -12,25 +12,16 @@ export class NewsletterService {
     private readonly newsLetterRepository: Repository<NewsLetter>,
   ) {}
 
-  async getNewsLetterToDelivery(
-    dto: GetNewsletterToDeliveryDto,
-  ): Promise<NewsLetter[]> {
-    return this.newsLetterRepository
-      .createQueryBuilder()
-      .where({
-        ...(dto.ignoreIDs && {
-          _id: Not(In(dto.ignoreIDs)),
-        }),
-        category: dto.newsLetterCategory,
-        deliveryExpiredAt: MoreThan(new Date()),
-      })
-      .orderBy('RAND()')
-      .take(dto.size)
-      .getMany();
-  }
-
   async createNewsLetter(dto: CreateNewsletterDto): Promise<NewsLetter> {
     return this.newsLetterRepository.save(dto);
+  }
+
+  async getNewsLetterByIDs(IDs: number[]): Promise<NewsLetter[]> {
+    return this.newsLetterRepository.find({
+      where: {
+        _id: In(IDs),
+      },
+    });
   }
 
   async getNewsLetterByContentId(
@@ -41,5 +32,21 @@ export class NewsletterService {
         contentId,
       },
     });
+  }
+
+  async getNewsLetterByFilter(dto: GetNewsLetterDto) {
+    return this.newsLetterRepository
+      .createQueryBuilder()
+      .where({
+        ...(dto.filterBy.denyIDs && {
+          _id: Not(In(dto.filterBy.denyIDs)),
+        }),
+        category: dto.filterBy.category,
+        ...(dto.filterBy.isDenyExpiredNews && {
+          deliveryExpiredAt: MoreThan(new Date()),
+        }),
+      })
+      .orderBy('RAND()')
+      .getMany();
   }
 }

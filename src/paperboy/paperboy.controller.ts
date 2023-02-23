@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PaperboyService } from './paperboy.service';
 
@@ -8,6 +8,11 @@ export class PaperboyController {
 
   @Cron('0 0 1,4,7,8 * * *')
   async paperboySchedule() {
-    await this.paperboyService.deliveryAllSubscribes();
+    await this.paperboyService.deliveryNewsLetter();
+  }
+
+  @Get('/test')
+  async paperboyScheduleTest() {
+    await this.paperboyService.deliveryNewsLetter();
   }
 }

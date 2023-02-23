@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -28,6 +29,7 @@ export class NewsLetter {
   })
   content: string;
 
+  @Index('uq_content_id', { unique: true })
   @Column({
     name: 'content_id',
     type: 'varchar',
@@ -70,6 +72,7 @@ export class NewsLetter {
   })
   writtenAt: Date;
 
+  @Index('delivery_expired_at')
   @Column({
     name: 'delivery_expired_at',
     type: 'datetime',

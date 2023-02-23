@@ -1,12 +1,5 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ENewsLetterCategory } from '../../common/enums/newsLetterCategory';
-import { Subscribe } from './subscribe.entity';
 
 @Entity('eb_subscribe_settings')
 export class SubscribeSetting {
@@ -18,5 +11,5 @@ export class SubscribeSetting {
     name: 'news_letter_category',
     enum: ENewsLetterCategory,
   })
-  newLetterCategory: ENewsLetterCategory;
+  newsLetterCategory: ENewsLetterCategory;
 }

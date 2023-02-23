@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { GeekNewsCrawlerService } from './geeknews/geeknews-crawler.service';
 import { SuppleCrawlerService } from './supple/supple-crawler.service';
@@ -18,6 +18,16 @@ export class CrawlerController {
 
   @Cron('0 20 06 * * *')
   suppleCrawler() {
+    return this.suppleCrawlerService.crawling(ESuppleTagName.IT_STORY);
+  }
+
+  @Get('/geeknews')
+  geekNewsCrawlerTest() {
+    return this.geekNewsCrawlerService.crawling();
+  }
+
+  @Get('/supple')
+  suppleCrawlerTest() {
     return this.suppleCrawlerService.crawling(ESuppleTagName.IT_STORY);
   }
 }
